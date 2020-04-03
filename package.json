@@ -1,5 +1,5 @@
 {
-  "name": "com.innogames.asset-relation-viewer-package-addressables",
+  "name": "com.innogames.asset-relations-viewer-addressables",
   "displayName": "Asset Relations Viewer Addressables Addon",
   "description": "Addon for the Asset Relations Viewer to support Unitys addressables system",
   "version": "1.0.0",
