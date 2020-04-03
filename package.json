@@ -1,0 +1,26 @@
+{
+  "name": "com.innogames.asset-relation-viewer-package-addressables",
+  "displayName": "Asset Relations Viewer Addressables Addon",
+  "description": "Addon for the Asset Relations Viewer to support Unitys addressables system",
+  "version": "1.0.0",
+  "unity": "2018.4",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/innogames/asset-relations-viewer-addressables.git"
+  },
+  "author": {
+    "name": "InnoGames GmbH"
+  },
+  "dependencies": 
+  {
+  },
+  "keywords": [
+    "assets",
+	"dependencies",
+	"addressables"
+  ],
+  "samples": [
+
+  ]
+}

@@ -1,0 +1,179 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Com.Innogames.Core.Frontend.AssetRelationsViewer;
+using UnityEditor;
+using UnityEngine;
+
+namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
+{
+	public class AddressableGroupVisualizationNodeData : VisualizationNodeData
+	{
+		public override Texture2D AssetPreviewTexture
+		{
+			get { return null; }
+		}
+
+		public override Texture2D ThumbNailTexture
+		{
+			get { return null; }
+		}
+	}
+	
+	public class AddressableGroupTypeHandler : ITypeHandler
+	{
+		private string[] m_nodes = new string[0];
+		private string[] m_filteredNodes = new string[0];
+		public const string HandledType = "AddressableGroup";
+		
+		private string m_selectedGroupId = String.Empty;
+		private string m_filter = String.Empty;
+
+		private int m_dropDownIndex = 0;
+		
+		private AssetRelationsViewerWindow _viewerWindow;
+		
+		public string GetHandledType()
+		{
+			return HandledType;
+		}
+
+		public bool HasFilter()
+		{
+			return false;
+		}
+
+		public bool IsFiltered(string id)
+		{
+			return false;
+		}
+
+		public string GetName(string id)
+		{
+			return "(AG) " + id;
+		}
+
+		public VisualizationNodeData CreateNodeCachedData(string id)
+		{
+			return new AddressableGroupVisualizationNodeData();
+		}
+
+		public void SelectInEditor(string id)
+		{
+		}
+
+		public void InitContext(CacheStateContext context, AssetRelationsViewerWindow viewerWindow)
+		{
+			_viewerWindow = viewerWindow;
+		
+			HashSet<string> nodes = new HashSet<string>();
+			
+			foreach (KeyValuePair<string,CreatedDependencyCache> pair in context.CreatedCaches)
+			{
+				IResolvedNode[] resolvedNodes = pair.Value.Cache.GetNodes();
+
+				foreach (IResolvedNode node in resolvedNodes)
+				{
+					if(node.Type == HandledType)
+						nodes.Add(node.Id);
+				}
+			}
+
+			m_nodes = nodes.ToArray();
+			m_filteredNodes = nodes.ToArray();
+		}
+
+		public bool HandlesCurrentNode()
+		{
+			return !string.IsNullOrEmpty(m_selectedGroupId);
+		}
+
+		public void OnGui()
+		{
+			EditorGUILayout.LabelField("Selected Group:");
+			EditorGUILayout.LabelField(m_selectedGroupId);
+			EditorGUILayout.Space();
+			
+			string newFilter = EditorGUILayout.TextField("Filter:", m_filter);
+
+			if (newFilter != m_filter)
+			{
+				m_filter = newFilter;
+				HashSet<string> filteredNodes = new HashSet<string>();
+
+				foreach (string node in m_nodes)
+				{
+					if (node.Contains(m_filter))
+						filteredNodes.Add(node);
+				}
+				
+				m_filteredNodes = filteredNodes.ToArray();
+			}
+
+			m_dropDownIndex = EditorGUILayout.Popup("Groups: ", m_dropDownIndex, m_filteredNodes);
+
+			if (GUILayout.Button("Select"))
+			{
+				m_selectedGroupId = m_filteredNodes[m_dropDownIndex];
+				_viewerWindow.ChangeSelection(m_selectedGroupId, HandledType);
+			}
+		}
+
+		public void OnSelectAsset(string id, string type)
+		{
+			if (type == HandledType)
+				m_selectedGroupId = id;
+			else
+				m_selectedGroupId = String.Empty;
+		}
+	}
+	
+	public class AddressableGroupNodeHandler : INodeHandler
+	{
+		private string[] HandledTypes = {"AddressableGroup"};
+	
+		public string GetId()
+		{
+			return "AddressableGroupNodeHandler";
+		}
+
+		public string[] GetHandledNodeTypes()
+		{
+			return HandledTypes;
+		}
+	
+		public int GetOwnFileSize(string id, string type, CacheStateContext stateContext)
+		{
+			return NodeDependencyLookupUtility.GetNodeSize(false, true, id, type, new HashSet<string>(), stateContext);
+		}
+
+		public bool IsNodePackedToApp(string id, string type)
+		{
+			return true;
+		}
+
+		public bool IsSceneAndPacked(string path)
+		{
+			return false;
+		}
+
+		public bool IsInResources(string path)
+		{
+			return false;
+		}
+
+		public bool IsNodeEditorOnly(string id, string type)
+		{
+			return false;
+		}
+
+		public bool ContributesToTreeSize()
+		{
+			return false;
+		}
+
+		public void InitContext(CacheStateContext cacheStateContext)
+		{
+		}
+	}
+}
