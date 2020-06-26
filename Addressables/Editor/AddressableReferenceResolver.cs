@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using Object = UnityEngine.Object;
 
 namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 {
@@ -104,6 +105,12 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 		public override void TraversePrefab(string id, UnityEngine.Object obj, Stack<PathSegment> stack)
 		{
+			// No implementation
+		}
+
+		public override void TraversePrefabVariant(string id, Object obj, Stack<PathSegment> stack)
+		{
+			// No implementation
 		}
 
 		public override Result GetDependency(Type objType, object obj, SerializedProperty property, string propertyPath, SerializedPropertyType type, Stack<PathSegment> stack)
