@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 {
-	public class AddressableGroupDependencyNode : IResolvedNode
+	public class AddressableAssetGroupDependencyNode : IResolvedNode
 	{
 		public string sId;
 
@@ -16,10 +16,10 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		public List<Dependency> Dependencies = new List<Dependency>();
 	}
 	
-	public class AddressableGroupTempCache : IDependencyCache
+	public class AddressableAssetGroupTempCache : IDependencyCache
 	{
 		private IResolvedNode[] Nodes = new IResolvedNode[0];
-		private Dictionary<string, AddressableGroupDependencyNode> Lookup = new Dictionary<string, AddressableGroupDependencyNode>();
+		private Dictionary<string, AddressableAssetGroupDependencyNode> Lookup = new Dictionary<string, AddressableAssetGroupDependencyNode>();
 		public const string ConnectionType = "AddressableGroupUsage";
 		
 		private CreatedDependencyCache _createdDependencyCache;
@@ -59,7 +59,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 			foreach (AddressableAssetGroup group in settings.groups)
 			{
-				AddressableGroupDependencyNode node = new AddressableGroupDependencyNode();
+				AddressableAssetGroupDependencyNode node = new AddressableAssetGroupDependencyNode();
 				node.sId = group.Name;
 
 				int i = 0;
@@ -97,8 +97,8 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		{
 			var resolverUsagesLookup = _createdDependencyCache.ResolverUsagesLookup;
 
-			if (resolverUsagesLookup.ContainsKey(AddressablesGroupResolver.Id) &&
-			    resolverUsagesLookup[AddressablesGroupResolver.Id].ConnectionTypes.Contains(ConnectionType))
+			if (resolverUsagesLookup.ContainsKey(AddressableAssetGroupResolver.Id) &&
+			    resolverUsagesLookup[AddressableAssetGroupResolver.Id].ConnectionTypes.Contains(ConnectionType))
 			{
 				return Lookup[id].Dependencies;
 			}
@@ -128,11 +128,11 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 	{
 	}
 
-	public class AddressablesGroupResolver : IAddressableGroupResolver
+	public class AddressableAssetGroupResolver : IAddressableGroupResolver
 	{
-		public const string Id = "AddressableGroupResolver";
+		public const string Id = "AddressableAssetGroupResolver";
 		
-		private string[] ConnectionTypes = {AddressableGroupTempCache.ConnectionType};
+		private string[] ConnectionTypes = {AddressableAssetGroupTempCache.ConnectionType};
 		private static ConnectionType DependencyType = new ConnectionType(new Color(0.85f, 0.65f, 0.55f), false, true);
 		
 		public string[] GetConnectionTypes()
