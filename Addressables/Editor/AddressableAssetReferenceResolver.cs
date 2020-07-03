@@ -10,7 +10,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 	/// <summary>
 	/// Resolver to find dependencies to assets which are connected via the AddressableAssets system
 	/// </summary>
-	public class AddressableReferenceResolver : IAssetDependencyResolver
+	public class AddressableAssetReferenceResolver : IAssetDependencyResolver
 	{
 		private static ConnectionType AddressableType = new ConnectionType(new Color(0.6f, 0.7f, 0.85f), true, false);
 

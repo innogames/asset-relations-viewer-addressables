@@ -20,7 +20,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		}
 	}
 	
-	public class AddressableGroupTypeHandler : ITypeHandler
+	public class AddressableAssetGroupTypeHandler : ITypeHandler
 	{
 		private string[] m_nodes = new string[0];
 		private string[] m_filteredNodes = new string[0];
@@ -62,7 +62,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		{
 		}
 
-		public void InitContext(CacheStateContext context, AssetRelationsViewerWindow viewerWindow)
+		public void InitContext(NodeDependencyLookupContext context, AssetRelationsViewerWindow viewerWindow)
 		{
 			_viewerWindow = viewerWindow;
 		
@@ -90,6 +90,13 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 		public void OnGui()
 		{
+			if (m_nodes.Length == 0)
+			{
+				EditorGUILayout.LabelField("AddressableGroupTempCache not activated");
+				EditorGUILayout.LabelField("or no addressable groups found");
+				return;
+			}
+			
 			EditorGUILayout.LabelField("Selected Group:");
 			EditorGUILayout.LabelField(m_selectedGroupId);
 			EditorGUILayout.Space();
@@ -142,7 +149,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return HandledTypes;
 		}
 	
-		public int GetOwnFileSize(string id, string type, CacheStateContext stateContext)
+		public int GetOwnFileSize(string id, string type, NodeDependencyLookupContext stateContext)
 		{
 			return NodeDependencyLookupUtility.GetNodeSize(false, true, id, type, new HashSet<string>(), stateContext);
 		}
@@ -172,7 +179,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return false;
 		}
 
-		public void InitContext(CacheStateContext cacheStateContext)
+		public void InitContext(NodeDependencyLookupContext nodeDependencyLookupContext)
 		{
 		}
 	}
