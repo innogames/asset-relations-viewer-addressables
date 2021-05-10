@@ -86,11 +86,12 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		{
 			SubSystem.Clear();
 
-			foreach (string guid in changedAssets)
+			foreach (string assetId in changedAssets)
 			{
+				string guid = NodeDependencyLookupUtility.GetGuidFromAssetId(assetId);
 				if (validGuids.Contains(guid))
 				{
-					cache._hierarchyTraverser.AddGuid(guid, SubSystem);
+					cache._hierarchyTraverser.AddAssetId(assetId, SubSystem);
 				}
 			}
 		}
@@ -121,9 +122,8 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 				if (assetReference != null && assetReference.editorAsset != null)
 				{
-					string path = AssetDatabase.GetAssetPath(assetReference.editorAsset);
-					string guid = AssetDatabase.AssetPathToGUID(path);
-					return new Result{Id = guid, NodeType = NodeType, ConnectionType = ResolvedTypeAddressable};
+					string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(assetReference.editorAsset);
+					return new Result{Id = assetId, NodeType = NodeType, ConnectionType = ResolvedTypeAddressable};
 				}
 			}
 			

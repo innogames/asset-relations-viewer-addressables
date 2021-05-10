@@ -7,11 +7,11 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 {
 	public class AddressableAssetGroupDependencyNode : IResolvedNode
 	{
-		public string sId;
+		public string groupId;
 
-		public string Id{get { return sId; }}
+		public string Id{get { return groupId; }}
 		public string Type { get { return "AddressableGroup"; }}
-		public bool Existing{get { return true; }}
+		public bool Existing {get { return true; }}
 		
 		public List<Dependency> Dependencies = new List<Dependency>();
 	}
@@ -33,7 +33,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			_createdDependencyCache = createdDependencyCache;
 		}
 
-		public bool NeedsUpdate()
+		public bool NeedsUpdate(ProgressBase progress)
 		{
 			return true;
 		}
@@ -60,7 +60,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			foreach (AddressableAssetGroup group in settings.groups)
 			{
 				AddressableAssetGroupDependencyNode node = new AddressableAssetGroupDependencyNode();
-				node.sId = group.Name;
+				node.groupId = group.Name;
 
 				int i = 0;
 				
@@ -71,8 +71,9 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 					
 					foreach (AddressableAssetEntry assetEntry in entries)
 					{
+						string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(assetEntry.MainAsset);
 						string componentName = "GroupUsage " + i++;
-						node.Dependencies.Add(new Dependency(assetEntry.guid, "AddressableGroupUsage", "Asset", new []{new PathSegment(componentName, PathSegmentType.Property), }));
+						node.Dependencies.Add(new Dependency(assetId, "AddressableGroupUsage", "Asset", new []{new PathSegment(componentName, PathSegmentType.Property), }));
 					}
 				}
 
@@ -83,9 +84,15 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			Nodes = nodes.ToArray();
 		}
 
-		public IResolvedNode[] GetNodes()
+		public void AddExistingNodes(List<IResolvedNode> nodes)
 		{
-			return Nodes;
+			foreach (IResolvedNode node in Nodes)
+			{
+				if (node.Existing)
+				{
+					nodes.Add(node);
+				}
+			}
 		}
 
 		public string GetHandledNodeType()
@@ -95,10 +102,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 		public List<Dependency> GetDependenciesForId(string id)
 		{
-			var resolverUsagesLookup = _createdDependencyCache.ResolverUsagesLookup;
-
-			if (resolverUsagesLookup.ContainsKey(AddressableAssetGroupResolver.Id) &&
-			    resolverUsagesLookup[AddressableAssetGroupResolver.Id].ConnectionTypes.Contains(ConnectionType))
+			if(NodeDependencyLookupUtility.IsResolverActive(_createdDependencyCache, AddressableAssetGroupResolver.Id, ConnectionType))	
 			{
 				return Lookup[id].Dependencies;
 			}
