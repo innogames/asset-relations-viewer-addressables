@@ -1,3 +1,6 @@
+**1.2.0**
+ - Made version compatible with the current AssetRelationsViewer version
+
 **1.1.1**
  - Made compatible with changes of AssetRelationsViewer 1.1.1
  - Changed name of AddressableReferenceResolver to AddressableAssetReferenceResolver

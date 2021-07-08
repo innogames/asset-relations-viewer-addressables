@@ -10,6 +10,29 @@ Not compatible with verified version 1.1.x!
 * com.innogames.asset-relations-viewer
 * com.unity.addressables
 
+## Installation
+
+#### For Unity 2018.3 or later (Using Unity Package Manager)
+
+Find the manifest.json file in the packages folder of your project and edit it to look like this:
+```js
+{
+  "dependencies": {
+    "com.innogames.asset-relations-viewer-addressables": "https://github.com/innogames/asset-relations-viewer-addressables.git",
+    ...
+  },
+}
+```
+
+If you are in production and not want to get automatic updates always use a tagged version like:
+
+```js
+	...
+    "com.innogames.asset-relations-viewer-addressables": "https://github.com/innogames/asset-relations-viewer-addressables.git#1.2.0",
+    ...
+
+```
+
 ## AddressableAssetGroup
 
 Addressable asset groups and their containing assets can be viewed.

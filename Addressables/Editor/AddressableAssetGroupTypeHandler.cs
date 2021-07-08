@@ -38,6 +38,11 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return HandledType;
 		}
 
+		public string GetSortingKey(string name)
+		{
+			return name;
+		}
+
 		public bool HasFilter()
 		{
 			return false;
@@ -68,9 +73,11 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		
 			HashSet<string> nodes = new HashSet<string>();
 			
+			// TODO
 			foreach (KeyValuePair<string,CreatedDependencyCache> pair in context.CreatedCaches)
 			{
-				IResolvedNode[] resolvedNodes = pair.Value.Cache.GetNodes();
+				List<IResolvedNode> resolvedNodes = new List<IResolvedNode>();
+				pair.Value.Cache.AddExistingNodes(resolvedNodes);
 
 				foreach (IResolvedNode node in resolvedNodes)
 				{
