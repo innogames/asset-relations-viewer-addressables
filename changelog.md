@@ -1,3 +1,6 @@
+**1.3.0**
+ - Made version compatible with the current AssetRelationsViewer version which had an API change
+
 **1.2.0**
  - Made version compatible with the current AssetRelationsViewer version
 

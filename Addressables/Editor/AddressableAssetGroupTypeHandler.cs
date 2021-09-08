@@ -161,7 +161,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return NodeDependencyLookupUtility.GetNodeSize(false, true, id, type, new HashSet<string>(), stateContext);
 		}
 
-		public bool IsNodePackedToApp(string id, string type)
+		public bool IsNodePackedToApp(string id, string type, bool alwaysExclude)
 		{
 			return true;
 		}
