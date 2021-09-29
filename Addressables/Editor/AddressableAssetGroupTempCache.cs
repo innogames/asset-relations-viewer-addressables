@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 
@@ -57,12 +58,14 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			
 			List<IResolvedNode> nodes = new List<IResolvedNode>();
 
-			foreach (AddressableAssetGroup group in settings.groups)
+			for (int i = 0; i < settings.groups.Count; ++i)
 			{
+				AddressableAssetGroup group = settings.groups[i];
+				EditorUtility.DisplayProgressBar("AddressableAssetGroupTempCache", $"Getting dependencies for {group.Name}", i / (float)(settings.groups.Count));
 				AddressableAssetGroupDependencyNode node = new AddressableAssetGroupDependencyNode();
 				node.groupId = group.Name;
 
-				int i = 0;
+				int g = 0;
 				
 				foreach (AddressableAssetEntry addressableAssetEntry in group.entries)
 				{
@@ -72,7 +75,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 					foreach (AddressableAssetEntry assetEntry in entries)
 					{
 						string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(assetEntry.MainAsset);
-						string componentName = "GroupUsage " + i++;
+						string componentName = "GroupUsage " + g++;
 						node.Dependencies.Add(new Dependency(assetId, "AddressableGroupUsage", "Asset", new []{new PathSegment(componentName, PathSegmentType.Property), }));
 					}
 				}
