@@ -1,3 +1,6 @@
+**1.4.0**
+ - Made version compatible with the current AssetRelationsViewer version 1.4.0
+
 **1.3.0**
  - Made version compatible with the current AssetRelationsViewer version which had an API change
  - Added progressbar to AddressableAssetGroupTempCache dependency collecting

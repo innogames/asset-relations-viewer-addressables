@@ -156,9 +156,10 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return HandledTypes;
 		}
 	
-		public int GetOwnFileSize(string id, string type, NodeDependencyLookupContext stateContext)
+		public int GetOwnFileSize(string type, string id, string key,
+			NodeDependencyLookupContext stateContext)
 		{
-			return NodeDependencyLookupUtility.GetNodeSize(false, true, id, type, new HashSet<string>(), stateContext);
+			return 0;
 		}
 
 		public bool IsNodePackedToApp(string id, string type, bool alwaysExclude)
