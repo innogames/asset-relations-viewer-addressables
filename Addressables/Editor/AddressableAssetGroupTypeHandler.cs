@@ -73,7 +73,6 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		
 			HashSet<string> nodes = new HashSet<string>();
 			
-			// TODO
 			foreach (KeyValuePair<string,CreatedDependencyCache> pair in context.CreatedCaches)
 			{
 				List<IResolvedNode> resolvedNodes = new List<IResolvedNode>();
@@ -157,9 +156,58 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		}
 	
 		public int GetOwnFileSize(string type, string id, string key,
-			NodeDependencyLookupContext stateContext)
+			NodeDependencyLookupContext stateContext,
+			Dictionary<string, NodeDependencyLookupUtility.NodeSize> ownSizeCache)
 		{
-			return 0;
+			Node node = stateContext.RelationsLookup.GetNode(key);
+			HashSet<Node> addedNodes = new HashSet<Node>();
+			HashSet<Node> addedFiles = new HashSet<Node>();
+			
+			GetTreeNodes(node, addedNodes, addedFiles);
+
+			int size = 0;
+			
+			foreach (Node addedNode in addedFiles)
+			{
+				size += NodeDependencyLookupUtility.GetOwnNodeSize(addedNode.Id, addedNode.Type, addedNode.Key,
+						stateContext, ownSizeCache);
+			}
+			
+			return size;
+		}
+
+		private void GetTreeNodes(Node node, HashSet<Node> addedNodes, HashSet<Node> addedFiles)
+		{
+			if (addedNodes.Contains(node))
+			{
+				return;
+			}
+
+			addedNodes.Add(node);
+
+			foreach (Connection referencerConnection in node.Referencers)
+			{
+				if (referencerConnection.Type == "AssetGroup")
+				{
+					return;
+				}
+			}
+			
+			if (node.Type == "File")
+			{
+				addedFiles.Add(node);
+				return;
+			}
+			
+			foreach (Connection dependency in node.Dependencies)
+			{
+				string dependencyType = dependency.Node.Type;
+
+				if (dependencyType == "Asset" || dependencyType == "File")
+				{
+					GetTreeNodes(dependency.Node, addedNodes, addedFiles);
+				}
+			}
 		}
 
 		public bool IsNodePackedToApp(string id, string type, bool alwaysExclude)

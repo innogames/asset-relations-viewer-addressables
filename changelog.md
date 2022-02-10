@@ -1,5 +1,6 @@
 **1.4.0**
  - Made version compatible with the current AssetRelationsViewer version 1.4.0
+ - Sizes of AssetBundles should be now calculated correctly
 
 **1.3.0**
  - Made version compatible with the current AssetRelationsViewer version which had an API change
