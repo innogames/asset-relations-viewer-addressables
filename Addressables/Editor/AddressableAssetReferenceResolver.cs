@@ -100,7 +100,6 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 	public class AddressableSerializedPropertyTraverserSubSystem : SerializedPropertyTraverserSubSystem
 	{
 		public static readonly string ResolvedTypeAddressable = "Addressable";
-		public static readonly string NodeType = "Asset";
 
 		private Type AddressableType = typeof(AssetReference);
 
@@ -123,7 +122,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 				if (assetReference != null && assetReference.editorAsset != null)
 				{
 					string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(assetReference.editorAsset);
-					return new Result{Id = assetId, NodeType = NodeType, ConnectionType = ResolvedTypeAddressable};
+					return new Result{Id = assetId, NodeType = AssetNodeType.Name, ConnectionType = ResolvedTypeAddressable};
 				}
 			}
 			

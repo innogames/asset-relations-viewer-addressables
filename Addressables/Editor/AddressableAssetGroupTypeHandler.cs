@@ -19,13 +19,12 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			get { return null; }
 		}
 	}
-	
+
 	public class AddressableAssetGroupTypeHandler : ITypeHandler
 	{
 		private string[] m_nodes = new string[0];
 		private string[] m_filteredNodes = new string[0];
-		public const string HandledType = "AddressableGroup";
-		
+
 		private string m_selectedGroupId = String.Empty;
 		private string m_filter = String.Empty;
 
@@ -35,7 +34,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		
 		public string GetHandledType()
 		{
-			return HandledType;
+			return AddressableGroupNodeType.Name;
 		}
 
 		public string GetSortingKey(string name)
@@ -80,7 +79,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 				foreach (IResolvedNode node in resolvedNodes)
 				{
-					if(node.Type == HandledType)
+					if(node.Type == AddressableGroupNodeType.Name)
 						nodes.Add(node.Id);
 				}
 			}
@@ -128,13 +127,13 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			if (GUILayout.Button("Select"))
 			{
 				m_selectedGroupId = m_filteredNodes[m_dropDownIndex];
-				_viewerWindow.ChangeSelection(m_selectedGroupId, HandledType);
+				_viewerWindow.ChangeSelection(m_selectedGroupId, AddressableGroupNodeType.Name);
 			}
 		}
 
 		public void OnSelectAsset(string id, string type)
 		{
-			if (type == HandledType)
+			if (type == AddressableGroupNodeType.Name)
 				m_selectedGroupId = id;
 			else
 				m_selectedGroupId = String.Empty;
@@ -143,7 +142,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 	
 	public class AddressableGroupNodeHandler : INodeHandler
 	{
-		private string[] HandledTypes = {"AddressableGroup"};
+		private string[] HandledTypes = {AddressableGroupNodeType.Name};
 	
 		public string GetId()
 		{
@@ -163,7 +162,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			HashSet<Node> addedNodes = new HashSet<Node>();
 			HashSet<Node> addedFiles = new HashSet<Node>();
 			
-			GetTreeNodes(node, addedNodes, addedFiles);
+			GetTreeNodes(node, stateContext, addedNodes, addedFiles, 0);
 
 			int size = 0;
 			
@@ -176,7 +175,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return size;
 		}
 
-		private void GetTreeNodes(Node node, HashSet<Node> addedNodes, HashSet<Node> addedFiles)
+		private void GetTreeNodes(Node node, NodeDependencyLookupContext stateContext, HashSet<Node> addedNodes, HashSet<Node> addedFiles, int depth)
 		{
 			if (addedNodes.Contains(node))
 			{
@@ -185,15 +184,18 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 			addedNodes.Add(node);
 
-			foreach (Connection referencerConnection in node.Referencers)
+			if (depth > 1)
 			{
-				if (referencerConnection.Type == "AssetGroup")
+				foreach (Connection referencerConnection in node.Referencers)
 				{
-					return;
+					if (referencerConnection.Node.Type == AddressableGroupNodeType.Name)
+					{
+						return;
+					}
 				}
 			}
-			
-			if (node.Type == "File")
+
+			if (node.Type == FileNodeType.Name)
 			{
 				addedFiles.Add(node);
 				return;
@@ -201,11 +203,16 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			
 			foreach (Connection dependency in node.Dependencies)
 			{
-				string dependencyType = dependency.Node.Type;
-
-				if (dependencyType == "Asset" || dependencyType == "File")
+				if (!stateContext.ConnectionTypeLookup.GetDependencyType(dependency.Type).IsHard)
 				{
-					GetTreeNodes(dependency.Node, addedNodes, addedFiles);
+					return;
+				}
+				
+				string dependencyNodeType = dependency.Node.Type;
+
+				if (dependencyNodeType == AssetNodeType.Name || dependencyNodeType == FileNodeType.Name)
+				{
+					GetTreeNodes(dependency.Node, stateContext, addedNodes, addedFiles, depth + 1);
 				}
 			}
 		}

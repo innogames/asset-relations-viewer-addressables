@@ -6,12 +6,17 @@ using UnityEngine;
 
 namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 {
+	public class AddressableGroupNodeType
+	{
+		public const string Name = "AddressableGroup";
+	}
+	
 	public class AddressableAssetGroupDependencyNode : IResolvedNode
 	{
 		public string groupId;
 
 		public string Id{get { return groupId; }}
-		public string Type { get { return "AddressableGroup"; }}
+		public string Type { get { return AddressableGroupNodeType.Name; }}
 		public bool Existing {get { return true; }}
 		
 		public List<Dependency> Dependencies = new List<Dependency>();
@@ -76,7 +81,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 					{
 						string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(assetEntry.MainAsset);
 						string componentName = "GroupUsage " + g++;
-						node.Dependencies.Add(new Dependency(assetId, "AddressableGroupUsage", "Asset", new []{new PathSegment(componentName, PathSegmentType.Property), }));
+						node.Dependencies.Add(new Dependency(assetId, ConnectionType, AssetNodeType.Name, new []{new PathSegment(componentName, PathSegmentType.Property), }));
 					}
 				}
 
@@ -100,7 +105,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 		public string GetHandledNodeType()
 		{
-			return "AddressableGroup";
+			return AddressableGroupNodeType.Name;
 		}
 
 		public List<Dependency> GetDependenciesForId(string id)
