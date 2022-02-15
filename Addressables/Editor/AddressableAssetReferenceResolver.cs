@@ -113,17 +113,13 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			// No implementation
 		}
 
-		public override Result GetDependency(Type objType, object obj, SerializedProperty property, string propertyPath, SerializedPropertyType type, Stack<PathSegment> stack)
+		public override Result GetDependency(object obj, string propertyPath, SerializedPropertyType type,
+			Stack<PathSegment> stack)
 		{
-			if (obj != null && IsType(obj.GetType(), AddressableType))
+			if (obj != null && obj is AssetReference assetReference && assetReference.editorAsset != null)
 			{
-				AssetReference assetReference = obj as AssetReference;
-
-				if (assetReference != null && assetReference.editorAsset != null)
-				{
-					string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(assetReference.editorAsset);
+				string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(assetReference.editorAsset);
 					return new Result{Id = assetId, NodeType = AssetNodeType.Name, ConnectionType = ResolvedTypeAddressable};
-				}
 			}
 			
 			return null;
