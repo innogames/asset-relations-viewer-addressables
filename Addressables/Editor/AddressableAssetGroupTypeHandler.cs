@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Com.Innogames.Core.Frontend.AssetRelationsViewer;
 using UnityEditor;
+using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 
 namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
@@ -54,7 +55,12 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 		public string GetName(string id)
 		{
-			return "(AG) " + id;
+			return id;
+		}
+
+		public string GetTypeName(string id)
+		{
+			return nameof(AddressableAssetGroup);
 		}
 
 		public VisualizationNodeData CreateNodeCachedData(string id)
