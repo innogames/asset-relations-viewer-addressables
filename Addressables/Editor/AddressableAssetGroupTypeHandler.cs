@@ -29,6 +29,8 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		private string m_selectedGroupId = String.Empty;
 		private string m_filter = String.Empty;
 
+		private AddressableGroupNodeHandler _nodeHandler;
+
 		private int m_dropDownIndex = 0;
 		
 		private AssetRelationsViewerWindow _viewerWindow;
@@ -43,24 +45,14 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return name;
 		}
 
-		public bool HasFilter()
+		public void ApplyFilterString(string filterString)
 		{
-			return false;
+			
 		}
 
-		public bool IsFiltered(string id)
+		public bool IsFiltered(string id, string nameFilter, string typeFilter)
 		{
-			return false;
-		}
-
-		public string GetName(string id)
-		{
-			return id;
-		}
-
-		public string GetTypeName(string id)
-		{
-			return nameof(AddressableAssetGroup);
+			return id.Contains(nameFilter) && _nodeHandler.GetTypeName(id).Contains(typeFilter);
 		}
 
 		public VisualizationNodeData CreateNodeCachedData(string id)
@@ -72,9 +64,10 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		{
 		}
 
-		public void InitContext(NodeDependencyLookupContext context, AssetRelationsViewerWindow viewerWindow)
+		public void InitContext(NodeDependencyLookupContext context, AssetRelationsViewerWindow viewerWindow, INodeHandler nodeHandler)
 		{
 			_viewerWindow = viewerWindow;
+			_nodeHandler = nodeHandler as AddressableGroupNodeHandler;
 		
 			HashSet<string> nodes = new HashSet<string>();
 			
@@ -148,16 +141,14 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 	
 	public class AddressableGroupNodeHandler : INodeHandler
 	{
-		private string[] HandledTypes = {AddressableGroupNodeType.Name};
-	
 		public string GetId()
 		{
 			return "AddressableGroupNodeHandler";
 		}
 
-		public string[] GetHandledNodeTypes()
+		public string GetHandledNodeType()
 		{
-			return HandledTypes;
+			return AddressableGroupNodeType.Name;
 		}
 	
 		public int GetOwnFileSize(string type, string id, string key,
@@ -246,6 +237,16 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		public bool ContributesToTreeSize()
 		{
 			return false;
+		}
+
+		public string GetName(string id)
+		{
+			return id;
+		}
+
+		public string GetTypeName(string id)
+		{
+			return nameof(AddressableAssetGroup);
 		}
 
 		public void InitContext(NodeDependencyLookupContext nodeDependencyLookupContext)
