@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Com.Innogames.Core.Frontend.AssetRelationsViewer;
 using UnityEditor;
-using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 
 namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
@@ -48,11 +47,6 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		public void ApplyFilterString(string filterString)
 		{
 			
-		}
-
-		public bool IsFiltered(string id, string nameFilter, string typeFilter)
-		{
-			return id.Contains(nameFilter) && _nodeHandler.GetTypeName(id).Contains(typeFilter);
 		}
 
 		public VisualizationNodeData CreateNodeCachedData(string id)
@@ -239,14 +233,10 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return false;
 		}
 
-		public string GetName(string id)
+		public void GetNameAndType(string id, out string name, out string type)
 		{
-			return id;
-		}
-
-		public string GetTypeName(string id)
-		{
-			return nameof(AddressableAssetGroup);
+			name = id;
+			type = "AddressableAssetGroup";
 		}
 
 		public void InitContext(NodeDependencyLookupContext nodeDependencyLookupContext)
