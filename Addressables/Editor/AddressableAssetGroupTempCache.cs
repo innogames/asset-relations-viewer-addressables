@@ -14,14 +14,13 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 	public class AddressableAssetGroupDependencyNode : IResolvedNode
 	{
 		public string groupId;
-
 		public string Id{get { return groupId; }}
 		public string Type { get { return AddressableGroupNodeType.Name; }}
 		public bool Existing {get { return true; }}
 		
 		public List<Dependency> Dependencies = new List<Dependency>();
 	}
-	
+
 	public class AddressableAssetGroupTempCache : IDependencyCache
 	{
 		private IResolvedNode[] Nodes = new IResolvedNode[0];
@@ -59,6 +58,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			}
 			
 			Lookup.Clear();
+
 			Nodes = new IResolvedNode[0];
 			
 			List<IResolvedNode> nodes = new List<IResolvedNode>();
@@ -101,11 +101,6 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 					nodes.Add(node);
 				}
 			}
-		}
-
-		public string GetHandledNodeType()
-		{
-			return AddressableGroupNodeType.Name;
 		}
 
 		public List<Dependency> GetDependenciesForId(string id)

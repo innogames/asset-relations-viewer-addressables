@@ -236,7 +236,12 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		public void GetNameAndType(string id, out string name, out string type)
 		{
 			name = id;
-			type = "AddressableAssetGroup";
+			type = "AddressableAssetGroupBundle";
+		}
+
+		public long GetChangedTimeStamp(string id)
+		{
+			return -1;
 		}
 
 		public void InitContext(NodeDependencyLookupContext nodeDependencyLookupContext)
