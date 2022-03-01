@@ -10,21 +10,11 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 	{
 		public const string Name = "AddressableGroup";
 	}
-	
-	public class AddressableAssetGroupDependencyNode : IResolvedNode
-	{
-		public string groupId;
-		public string Id{get { return groupId; }}
-		public string Type { get { return AddressableGroupNodeType.Name; }}
-		public bool Existing {get { return true; }}
-		
-		public List<Dependency> Dependencies = new List<Dependency>();
-	}
 
 	public class AddressableAssetGroupTempCache : IDependencyCache
 	{
-		private IResolvedNode[] Nodes = new IResolvedNode[0];
-		private Dictionary<string, AddressableAssetGroupDependencyNode> Lookup = new Dictionary<string, AddressableAssetGroupDependencyNode>();
+		private IDependencyMappingNode[] Nodes = new IDependencyMappingNode[0];
+		private Dictionary<string, GenericDependencyMappingNode> Lookup = new Dictionary<string, GenericDependencyMappingNode>();
 		public const string ConnectionType = "AddressableGroupUsage";
 		
 		private CreatedDependencyCache _createdDependencyCache;
@@ -59,16 +49,17 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			
 			Lookup.Clear();
 
-			Nodes = new IResolvedNode[0];
+			Nodes = new IDependencyMappingNode[0];
 			
-			List<IResolvedNode> nodes = new List<IResolvedNode>();
+			List<IDependencyMappingNode> nodes = new List<IDependencyMappingNode>();
 
 			for (int i = 0; i < settings.groups.Count; ++i)
 			{
 				AddressableAssetGroup group = settings.groups[i];
 				EditorUtility.DisplayProgressBar("AddressableAssetGroupTempCache", $"Getting dependencies for {group.Name}", i / (float)(settings.groups.Count));
-				AddressableAssetGroupDependencyNode node = new AddressableAssetGroupDependencyNode();
-				node.groupId = group.Name;
+				GenericDependencyMappingNode node = new GenericDependencyMappingNode();
+				node.NodeId = group.Name;
+				node.NodeType = AddressableGroupNodeType.Name;
 
 				int g = 0;
 				
@@ -92,9 +83,9 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			Nodes = nodes.ToArray();
 		}
 
-		public void AddExistingNodes(List<IResolvedNode> nodes)
+		public void AddExistingNodes(List<IDependencyMappingNode> nodes)
 		{
-			foreach (IResolvedNode node in Nodes)
+			foreach (IDependencyMappingNode node in Nodes)
 			{
 				if (node.Existing)
 				{

@@ -67,10 +67,10 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			
 			foreach (KeyValuePair<string,CreatedDependencyCache> pair in context.CreatedCaches)
 			{
-				List<IResolvedNode> resolvedNodes = new List<IResolvedNode>();
+				List<IDependencyMappingNode> resolvedNodes = new List<IDependencyMappingNode>();
 				pair.Value.Cache.AddExistingNodes(resolvedNodes);
 
-				foreach (IResolvedNode node in resolvedNodes)
+				foreach (IDependencyMappingNode node in resolvedNodes)
 				{
 					if(node.Type == AddressableGroupNodeType.Name)
 						nodes.Add(node.Id);
