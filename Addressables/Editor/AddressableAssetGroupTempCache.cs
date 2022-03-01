@@ -131,7 +131,8 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		public const string Id = "AddressableAssetGroupResolver";
 		
 		private string[] ConnectionTypes = {AddressableAssetGroupTempCache.ConnectionType};
-		private static ConnectionType DependencyType = new ConnectionType(new Color(0.85f, 0.65f, 0.55f), false, true);
+		private const string ConnectionTypeDescription = "Dependencies from the AddressableAssetGroup to its containing assets";
+		private static ConnectionType DependencyType = new ConnectionType(new Color(0.85f, 0.65f, 0.55f), false, true, ConnectionTypeDescription);
 		
 		public string[] GetConnectionTypes()
 		{
