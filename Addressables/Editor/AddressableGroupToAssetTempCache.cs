@@ -6,16 +6,16 @@ using UnityEngine;
 
 namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 {
-	public class AddressableGroupNodeType
+	public class AddressableAssetGroupNodeType
 	{
-		public const string Name = "AddressableGroup";
+		public const string Name = "AddressableAssetGroup";
 	}
 
-	public class AddressableAssetGroupTempCache : IDependencyCache
+	public class AddressableGroupToAssetTempCache : IDependencyCache
 	{
 		private IDependencyMappingNode[] Nodes = new IDependencyMappingNode[0];
 		private Dictionary<string, GenericDependencyMappingNode> Lookup = new Dictionary<string, GenericDependencyMappingNode>();
-		public const string ConnectionType = "AddressableGroupUsage";
+		public const string ConnectionType = "AddressableGroupToAsset";
 		
 		private CreatedDependencyCache _createdDependencyCache;
 		
@@ -59,7 +59,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 				EditorUtility.DisplayProgressBar("AddressableAssetGroupTempCache", $"Getting dependencies for {group.Name}", i / (float)(settings.groups.Count));
 				GenericDependencyMappingNode node = new GenericDependencyMappingNode();
 				node.NodeId = group.Name;
-				node.NodeType = AddressableGroupNodeType.Name;
+				node.NodeType = AddressableAssetGroupNodeType.Name;
 
 				int g = 0;
 				
@@ -130,9 +130,9 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 	{
 		public const string Id = "AddressableAssetGroupResolver";
 		
-		private string[] ConnectionTypes = {AddressableAssetGroupTempCache.ConnectionType};
+		private string[] ConnectionTypes = {AddressableGroupToAssetTempCache.ConnectionType};
 		private const string ConnectionTypeDescription = "Dependencies from the AddressableAssetGroup to its containing assets";
-		private static ConnectionType DependencyType = new ConnectionType(new Color(0.85f, 0.65f, 0.55f), false, true, ConnectionTypeDescription);
+		private static DependencyType DependencyType = new DependencyType("AddressableAssetGroup->Asset", new Color(0.85f, 0.65f, 0.55f), false, true, ConnectionTypeDescription);
 		
 		public string[] GetConnectionTypes()
 		{
@@ -144,7 +144,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return Id;
 		}
 
-		public ConnectionType GetDependencyTypeForId(string typeId)
+		public DependencyType GetDependencyTypeForId(string typeId)
 		{
 			return DependencyType;
 		}

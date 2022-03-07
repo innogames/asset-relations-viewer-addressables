@@ -36,7 +36,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		
 		public string GetHandledType()
 		{
-			return AddressableGroupNodeType.Name;
+			return AddressableAssetGroupNodeType.Name;
 		}
 
 		public string GetSortingKey(string name)
@@ -72,7 +72,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 				foreach (IDependencyMappingNode node in resolvedNodes)
 				{
-					if(node.Type == AddressableGroupNodeType.Name)
+					if(node.Type == AddressableAssetGroupNodeType.Name)
 						nodes.Add(node.Id);
 				}
 			}
@@ -120,13 +120,13 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			if (GUILayout.Button("Select"))
 			{
 				m_selectedGroupId = m_filteredNodes[m_dropDownIndex];
-				_viewerWindow.ChangeSelection(m_selectedGroupId, AddressableGroupNodeType.Name);
+				_viewerWindow.ChangeSelection(m_selectedGroupId, AddressableAssetGroupNodeType.Name);
 			}
 		}
 
 		public void OnSelectAsset(string id, string type)
 		{
-			if (type == AddressableGroupNodeType.Name)
+			if (type == AddressableAssetGroupNodeType.Name)
 				m_selectedGroupId = id;
 			else
 				m_selectedGroupId = String.Empty;
@@ -142,7 +142,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 		public string GetHandledNodeType()
 		{
-			return AddressableGroupNodeType.Name;
+			return AddressableAssetGroupNodeType.Name;
 		}
 	
 		public int GetOwnFileSize(string type, string id, string key,
@@ -179,7 +179,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			{
 				foreach (Connection referencerConnection in node.Referencers)
 				{
-					if (referencerConnection.Node.Type == AddressableGroupNodeType.Name)
+					if (referencerConnection.Node.Type == AddressableAssetGroupNodeType.Name)
 					{
 						return;
 					}
@@ -194,7 +194,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			
 			foreach (Connection dependency in node.Dependencies)
 			{
-				if (!stateContext.ConnectionTypeLookup.GetDependencyType(dependency.Type).IsHard)
+				if (!stateContext.DependencyTypeLookup.GetDependencyType(dependency.Type).IsHard)
 				{
 					return;
 				}

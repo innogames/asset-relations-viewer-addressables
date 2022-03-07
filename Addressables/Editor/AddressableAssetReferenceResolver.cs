@@ -13,7 +13,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 	public class AddressableAssetReferenceResolver : IAssetDependencyResolver
 	{
 		private const string ConnectionTypeDescription = "Dependencies between assets done by an Addressable AssetReference";
-		private static ConnectionType AddressableType = new ConnectionType(new Color(0.6f, 0.7f, 0.85f), true, false, ConnectionTypeDescription);
+		private static DependencyType AddressableType = new DependencyType("Asset->Asset by AssetReference", new Color(0.6f, 0.7f, 0.85f), true, false, ConnectionTypeDescription);
 
 		private readonly HashSet<string> validGuids = new HashSet<string>();
 		
@@ -51,7 +51,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return Id;
 		}
 
-		public ConnectionType GetDependencyTypeForId(string typeId)
+		public DependencyType GetDependencyTypeForId(string typeId)
 		{
 			return AddressableType;
 		}
