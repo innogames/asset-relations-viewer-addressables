@@ -6,12 +6,15 @@ using UnityEngine;
 
 namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 {
+	public class AssetToAddressableGroupDependency
+	{
+		public const string Name = "AssetToAddressableGroup";
+	}
+
 	public class AddressableAssetToGroupTempCache : IDependencyCache
 	{
 		private IDependencyMappingNode[] Nodes = new IDependencyMappingNode[0];
 		private Dictionary<string, GenericDependencyMappingNode> Lookup = new Dictionary<string, GenericDependencyMappingNode>();
-		public const string ConnectionType = "AssetToAddressableGroup";
-		
 		private CreatedDependencyCache _createdDependencyCache;
 		
 		public void ClearFile(string directory)
@@ -93,7 +96,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 		public List<Dependency> GetDependenciesForId(string id)
 		{
-			if(NodeDependencyLookupUtility.IsResolverActive(_createdDependencyCache, AddressableAssetToGroupResolver.Id, ConnectionType) && Lookup.ContainsKey(id))	
+			if(NodeDependencyLookupUtility.IsResolverActive(_createdDependencyCache, AddressableAssetToGroupResolver.Id, AssetToAddressableGroupDependency.Name) && Lookup.ContainsKey(id))	
 			{
 				return Lookup[id].Dependencies;
 			}
@@ -127,11 +130,11 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 	{
 		public const string Id = "AddressableAssetToGroupResolver";
 		
-		private string[] ConnectionTypes = {AddressableAssetToGroupTempCache.ConnectionType};
+		private string[] ConnectionTypes = {AssetToAddressableGroupDependency.Name};
 		private const string ConnectionTypeDescription = "Dependencies from the asset to the AddressableAssetGroup the asset is part of";
 		private static DependencyType DependencyType = new DependencyType("Asset->AddressableAssetGroup", new Color(0.85f, 0.55f, 0.35f), false, true, ConnectionTypeDescription);
 		
-		public string[] GetConnectionTypes()
+		public string[] GetDependencyTypes()
 		{
 			return ConnectionTypes;
 		}

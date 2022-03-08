@@ -7,6 +7,11 @@ using Object = UnityEngine.Object;
 
 namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 {
+	public class AssetToAssetAssetRefDependency
+	{
+		public const string Name = "ATOA_AssetRef";
+	}
+	
 	/// <summary>
 	/// Resolver to find dependencies to assets which are connected via the AddressableAssets system
 	/// </summary>
@@ -16,9 +21,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		private static DependencyType AddressableType = new DependencyType("Asset->Asset by AssetReference", new Color(0.6f, 0.7f, 0.85f), true, false, ConnectionTypeDescription);
 
 		private readonly HashSet<string> validGuids = new HashSet<string>();
-		
-		public const string ResolvedType = "Addressable";
-		public const string Id = "AddressableReferenceResolver";
+		private const string Id = "AddressableReferenceResolver";
 		
 		private AddressableSerializedPropertyTraverserSubSystem SubSystem = new AddressableSerializedPropertyTraverserSubSystem();
 		
@@ -56,9 +59,9 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return AddressableType;
 		}
 
-		public string[] GetConnectionTypes()
+		public string[] GetDependencyTypes()
 		{
-			return new[] { ResolvedType };
+			return new[] { AssetToAssetAssetRefDependency.Name };
 		}
 
 		public void SetValidGUIDs()
@@ -100,8 +103,6 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 	public class AddressableSerializedPropertyTraverserSubSystem : SerializedPropertyTraverserSubSystem
 	{
-		public static readonly string ResolvedTypeAddressable = "Addressable";
-
 		private Type AddressableType = typeof(AssetReference);
 
 		public override void TraversePrefab(string id, UnityEngine.Object obj, Stack<PathSegment> stack)
@@ -120,7 +121,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			if (obj != null && obj is AssetReference assetReference && assetReference.editorAsset != null)
 			{
 				string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(assetReference.editorAsset);
-					return new Result{Id = assetId, NodeType = AssetNodeType.Name, ConnectionType = ResolvedTypeAddressable};
+					return new Result{Id = assetId, NodeType = AssetNodeType.Name, DependencyType = AssetToAssetAssetRefDependency.Name};
 			}
 			
 			return null;
