@@ -83,7 +83,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			}
 		}
 
-		public void Initialize(AssetDependencyCache cache, HashSet<string> changedAssets, ProgressBase progress)
+		public void Initialize(AssetDependencyCache cache, HashSet<string> changedAssets)
 		{
 			SubSystem.Clear();
 

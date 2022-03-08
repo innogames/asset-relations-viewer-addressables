@@ -23,7 +23,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			_createdDependencyCache = createdDependencyCache;
 		}
 
-		public bool NeedsUpdate(ProgressBase progress)
+		public bool NeedsUpdate()
 		{
 			return true;
 		}
@@ -33,7 +33,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return !Application.isPlaying;
 		}
 
-		public void Update(ProgressBase progress)
+		public void Update()
 		{
 			AddressableAssetSettings settings = UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings;
 
