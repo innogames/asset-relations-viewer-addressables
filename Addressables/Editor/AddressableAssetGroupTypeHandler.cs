@@ -44,11 +44,6 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return name;
 		}
 
-		public void ApplyFilterString(string filterString)
-		{
-			
-		}
-
 		public VisualizationNodeData CreateNodeCachedData(string id)
 		{
 			return new AddressableGroupVisualizationNodeData();
