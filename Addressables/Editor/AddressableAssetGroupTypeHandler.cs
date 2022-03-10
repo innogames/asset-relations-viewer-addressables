@@ -189,7 +189,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			
 			foreach (Connection dependency in node.Dependencies)
 			{
-				if (!stateContext.DependencyTypeLookup.GetDependencyType(dependency.Type).IsHard)
+				if (!stateContext.DependencyTypeLookup.GetDependencyType(dependency.DependencyType).IsHard)
 				{
 					return;
 				}
