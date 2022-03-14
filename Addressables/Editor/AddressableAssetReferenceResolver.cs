@@ -7,17 +7,21 @@ using Object = UnityEngine.Object;
 
 namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 {
+	public class AssetToAssetAssetRefDependency
+	{
+		public const string Name = "ATOA_AssetRef";
+	}
+	
 	/// <summary>
 	/// Resolver to find dependencies to assets which are connected via the AddressableAssets system
 	/// </summary>
 	public class AddressableAssetReferenceResolver : IAssetDependencyResolver
 	{
-		private static ConnectionType AddressableType = new ConnectionType(new Color(0.6f, 0.7f, 0.85f), true, false);
+		private const string ConnectionTypeDescription = "Dependencies between assets done by an Addressable AssetReference";
+		private static DependencyType AddressableType = new DependencyType("Asset->Asset by AssetReference", new Color(0.6f, 0.7f, 0.85f), true, false, ConnectionTypeDescription);
 
 		private readonly HashSet<string> validGuids = new HashSet<string>();
-		
-		public const string ResolvedType = "Addressable";
-		public const string Id = "AddressableReferenceResolver";
+		private const string Id = "AddressableReferenceResolver";
 		
 		private AddressableSerializedPropertyTraverserSubSystem SubSystem = new AddressableSerializedPropertyTraverserSubSystem();
 		
@@ -50,14 +54,14 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return Id;
 		}
 
-		public ConnectionType GetDependencyTypeForId(string typeId)
+		public DependencyType GetDependencyTypeForId(string typeId)
 		{
 			return AddressableType;
 		}
 
-		public string[] GetConnectionTypes()
+		public string[] GetDependencyTypes()
 		{
-			return new[] { ResolvedType };
+			return new[] { AssetToAssetAssetRefDependency.Name };
 		}
 
 		public void SetValidGUIDs()
@@ -82,7 +86,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			}
 		}
 
-		public void Initialize(AssetDependencyCache cache, HashSet<string> changedAssets, ProgressBase progress)
+		public void Initialize(AssetDependencyCache cache, HashSet<string> changedAssets)
 		{
 			SubSystem.Clear();
 
@@ -99,9 +103,6 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 	public class AddressableSerializedPropertyTraverserSubSystem : SerializedPropertyTraverserSubSystem
 	{
-		public static readonly string ResolvedTypeAddressable = "Addressable";
-		public static readonly string NodeType = "Asset";
-
 		private Type AddressableType = typeof(AssetReference);
 
 		public override void TraversePrefab(string id, UnityEngine.Object obj, Stack<PathSegment> stack)
@@ -114,17 +115,13 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			// No implementation
 		}
 
-		public override Result GetDependency(Type objType, object obj, SerializedProperty property, string propertyPath, SerializedPropertyType type, Stack<PathSegment> stack)
+		public override Result GetDependency(object obj, string propertyPath, SerializedPropertyType type,
+			Stack<PathSegment> stack)
 		{
-			if (obj != null && IsType(obj.GetType(), AddressableType))
+			if (obj != null && obj is AssetReference assetReference && assetReference.editorAsset != null)
 			{
-				AssetReference assetReference = obj as AssetReference;
-
-				if (assetReference != null && assetReference.editorAsset != null)
-				{
-					string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(assetReference.editorAsset);
-					return new Result{Id = assetId, NodeType = NodeType, ConnectionType = ResolvedTypeAddressable};
-				}
+				string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(assetReference.editorAsset);
+					return new Result{Id = assetId, NodeType = AssetNodeType.Name, DependencyType = AssetToAssetAssetRefDependency.Name};
 			}
 			
 			return null;

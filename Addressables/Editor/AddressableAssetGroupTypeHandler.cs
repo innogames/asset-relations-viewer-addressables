@@ -19,15 +19,16 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			get { return null; }
 		}
 	}
-	
+
 	public class AddressableAssetGroupTypeHandler : ITypeHandler
 	{
 		private string[] m_nodes = new string[0];
 		private string[] m_filteredNodes = new string[0];
-		public const string HandledType = "AddressableGroup";
-		
+
 		private string m_selectedGroupId = String.Empty;
 		private string m_filter = String.Empty;
+
+		private AddressableGroupNodeHandler _nodeHandler;
 
 		private int m_dropDownIndex = 0;
 		
@@ -35,27 +36,12 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		
 		public string GetHandledType()
 		{
-			return HandledType;
+			return AddressableAssetGroupNodeType.Name;
 		}
 
 		public string GetSortingKey(string name)
 		{
 			return name;
-		}
-
-		public bool HasFilter()
-		{
-			return false;
-		}
-
-		public bool IsFiltered(string id)
-		{
-			return false;
-		}
-
-		public string GetName(string id)
-		{
-			return "(AG) " + id;
 		}
 
 		public VisualizationNodeData CreateNodeCachedData(string id)
@@ -67,21 +53,21 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		{
 		}
 
-		public void InitContext(NodeDependencyLookupContext context, AssetRelationsViewerWindow viewerWindow)
+		public void InitContext(NodeDependencyLookupContext context, AssetRelationsViewerWindow viewerWindow, INodeHandler nodeHandler)
 		{
 			_viewerWindow = viewerWindow;
+			_nodeHandler = nodeHandler as AddressableGroupNodeHandler;
 		
 			HashSet<string> nodes = new HashSet<string>();
 			
-			// TODO
 			foreach (KeyValuePair<string,CreatedDependencyCache> pair in context.CreatedCaches)
 			{
-				List<IResolvedNode> resolvedNodes = new List<IResolvedNode>();
+				List<IDependencyMappingNode> resolvedNodes = new List<IDependencyMappingNode>();
 				pair.Value.Cache.AddExistingNodes(resolvedNodes);
 
-				foreach (IResolvedNode node in resolvedNodes)
+				foreach (IDependencyMappingNode node in resolvedNodes)
 				{
-					if(node.Type == HandledType)
+					if(node.Type == AddressableAssetGroupNodeType.Name)
 						nodes.Add(node.Id);
 				}
 			}
@@ -129,13 +115,13 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			if (GUILayout.Button("Select"))
 			{
 				m_selectedGroupId = m_filteredNodes[m_dropDownIndex];
-				_viewerWindow.ChangeSelection(m_selectedGroupId, HandledType);
+				_viewerWindow.ChangeSelection(m_selectedGroupId, AddressableAssetGroupNodeType.Name);
 			}
 		}
 
 		public void OnSelectAsset(string id, string type)
 		{
-			if (type == HandledType)
+			if (type == AddressableAssetGroupNodeType.Name)
 				m_selectedGroupId = id;
 			else
 				m_selectedGroupId = String.Empty;
@@ -144,21 +130,77 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 	
 	public class AddressableGroupNodeHandler : INodeHandler
 	{
-		private string[] HandledTypes = {"AddressableGroup"};
-	
 		public string GetId()
 		{
 			return "AddressableGroupNodeHandler";
 		}
 
-		public string[] GetHandledNodeTypes()
+		public string GetHandledNodeType()
 		{
-			return HandledTypes;
+			return AddressableAssetGroupNodeType.Name;
 		}
 	
-		public int GetOwnFileSize(string id, string type, NodeDependencyLookupContext stateContext)
+		public int GetOwnFileSize(string type, string id, string key,
+			NodeDependencyLookupContext stateContext,
+			Dictionary<string, NodeDependencyLookupUtility.NodeSize> ownSizeCache)
 		{
-			return NodeDependencyLookupUtility.GetNodeSize(false, true, id, type, new HashSet<string>(), stateContext);
+			Node node = stateContext.RelationsLookup.GetNode(key);
+			HashSet<Node> addedNodes = new HashSet<Node>();
+			HashSet<Node> addedFiles = new HashSet<Node>();
+			
+			GetTreeNodes(node, stateContext, addedNodes, addedFiles, 0);
+
+			int size = 0;
+			
+			foreach (Node addedNode in addedFiles)
+			{
+				size += NodeDependencyLookupUtility.GetOwnNodeSize(addedNode.Id, addedNode.Type, addedNode.Key,
+						stateContext, ownSizeCache);
+			}
+			
+			return size;
+		}
+
+		private void GetTreeNodes(Node node, NodeDependencyLookupContext stateContext, HashSet<Node> addedNodes, HashSet<Node> addedFiles, int depth)
+		{
+			if (addedNodes.Contains(node))
+			{
+				return;
+			}
+
+			addedNodes.Add(node);
+
+			if (depth > 1)
+			{
+				foreach (Connection referencerConnection in node.Referencers)
+				{
+					if (referencerConnection.Node.Type == AddressableAssetGroupNodeType.Name)
+					{
+						return;
+					}
+				}
+			}
+
+			if (node.Type == FileNodeType.Name)
+			{
+				addedFiles.Add(node);
+				return;
+			}
+			
+			foreach (Connection dependency in node.Dependencies)
+			{
+				if (!stateContext.DependencyTypeLookup.GetDependencyType(dependency.DependencyType).IsHard)
+				{
+					return;
+				}
+				
+				string dependencyNodeType = dependency.Node.Type;
+
+				if (dependencyNodeType == AssetNodeType.Name || dependencyNodeType == FileNodeType.Name)
+				{
+					GetTreeNodes(dependency.Node, stateContext, addedNodes, addedFiles, depth + 1);
+				}
+			}
 		}
 
 		public bool IsNodePackedToApp(string id, string type, bool alwaysExclude)
@@ -184,6 +226,17 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		public bool ContributesToTreeSize()
 		{
 			return false;
+		}
+
+		public void GetNameAndType(string id, out string name, out string type)
+		{
+			name = id;
+			type = "AddressableAssetGroupBundle";
+		}
+
+		public long GetChangedTimeStamp(string id)
+		{
+			return -1;
 		}
 
 		public void InitContext(NodeDependencyLookupContext nodeDependencyLookupContext)

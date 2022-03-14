@@ -6,23 +6,21 @@ using UnityEngine;
 
 namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 {
-	public class AddressableAssetGroupDependencyNode : IResolvedNode
+	public class AddressableAssetGroupNodeType
 	{
-		public string groupId;
-
-		public string Id{get { return groupId; }}
-		public string Type { get { return "AddressableGroup"; }}
-		public bool Existing {get { return true; }}
-		
-		public List<Dependency> Dependencies = new List<Dependency>();
+		public const string Name = "AddressableAssetGroup";
 	}
 	
-	public class AddressableAssetGroupTempCache : IDependencyCache
+	public class AddressableGroupToAssetDependency
 	{
-		private IResolvedNode[] Nodes = new IResolvedNode[0];
-		private Dictionary<string, AddressableAssetGroupDependencyNode> Lookup = new Dictionary<string, AddressableAssetGroupDependencyNode>();
-		public const string ConnectionType = "AddressableGroupUsage";
-		
+		public const string Name = "AddressableGroupToAsset";
+	}
+
+	public class AddressableGroupToAssetTempCache : IDependencyCache
+	{
+		private IDependencyMappingNode[] Nodes = new IDependencyMappingNode[0];
+		private Dictionary<string, GenericDependencyMappingNode> Lookup = new Dictionary<string, GenericDependencyMappingNode>();
+
 		private CreatedDependencyCache _createdDependencyCache;
 		
 		public void ClearFile(string directory)
@@ -34,7 +32,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			_createdDependencyCache = createdDependencyCache;
 		}
 
-		public bool NeedsUpdate(ProgressBase progress)
+		public bool NeedsUpdate()
 		{
 			return true;
 		}
@@ -44,7 +42,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return !Application.isPlaying;
 		}
 
-		public void Update(ProgressBase progress)
+		public void Update()
 		{
 			AddressableAssetSettings settings = UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings;
 
@@ -54,16 +52,18 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			}
 			
 			Lookup.Clear();
-			Nodes = new IResolvedNode[0];
+
+			Nodes = new IDependencyMappingNode[0];
 			
-			List<IResolvedNode> nodes = new List<IResolvedNode>();
+			List<IDependencyMappingNode> nodes = new List<IDependencyMappingNode>();
 
 			for (int i = 0; i < settings.groups.Count; ++i)
 			{
 				AddressableAssetGroup group = settings.groups[i];
 				EditorUtility.DisplayProgressBar("AddressableAssetGroupTempCache", $"Getting dependencies for {group.Name}", i / (float)(settings.groups.Count));
-				AddressableAssetGroupDependencyNode node = new AddressableAssetGroupDependencyNode();
-				node.groupId = group.Name;
+				GenericDependencyMappingNode node = new GenericDependencyMappingNode();
+				node.NodeId = group.Name;
+				node.NodeType = AddressableAssetGroupNodeType.Name;
 
 				int g = 0;
 				
@@ -76,7 +76,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 					{
 						string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(assetEntry.MainAsset);
 						string componentName = "GroupUsage " + g++;
-						node.Dependencies.Add(new Dependency(assetId, "AddressableGroupUsage", "Asset", new []{new PathSegment(componentName, PathSegmentType.Property), }));
+						node.Dependencies.Add(new Dependency(assetId, AddressableGroupToAssetDependency.Name, AssetNodeType.Name, new []{new PathSegment(componentName, PathSegmentType.Property), }));
 					}
 				}
 
@@ -87,9 +87,9 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			Nodes = nodes.ToArray();
 		}
 
-		public void AddExistingNodes(List<IResolvedNode> nodes)
+		public void AddExistingNodes(List<IDependencyMappingNode> nodes)
 		{
-			foreach (IResolvedNode node in Nodes)
+			foreach (IDependencyMappingNode node in Nodes)
 			{
 				if (node.Existing)
 				{
@@ -98,14 +98,9 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			}
 		}
 
-		public string GetHandledNodeType()
-		{
-			return "AddressableGroup";
-		}
-
 		public List<Dependency> GetDependenciesForId(string id)
 		{
-			if(NodeDependencyLookupUtility.IsResolverActive(_createdDependencyCache, AddressableAssetGroupResolver.Id, ConnectionType))	
+			if(NodeDependencyLookupUtility.IsResolverActive(_createdDependencyCache, AddressableAssetGroupResolver.Id, AddressableGroupToAssetDependency.Name))	
 			{
 				return Lookup[id].Dependencies;
 			}
@@ -139,10 +134,11 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 	{
 		public const string Id = "AddressableAssetGroupResolver";
 		
-		private string[] ConnectionTypes = {AddressableAssetGroupTempCache.ConnectionType};
-		private static ConnectionType DependencyType = new ConnectionType(new Color(0.85f, 0.65f, 0.55f), false, true);
+		private string[] ConnectionTypes = {AddressableGroupToAssetDependency.Name};
+		private const string ConnectionTypeDescription = "Dependencies from the AddressableAssetGroup to its containing assets";
+		private static DependencyType DependencyType = new DependencyType("AddressableAssetGroup->Asset", new Color(0.85f, 0.65f, 0.55f), false, true, ConnectionTypeDescription);
 		
-		public string[] GetConnectionTypes()
+		public string[] GetDependencyTypes()
 		{
 			return ConnectionTypes;
 		}
@@ -152,7 +148,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return Id;
 		}
 
-		public ConnectionType GetDependencyTypeForId(string typeId)
+		public DependencyType GetDependencyTypeForId(string typeId)
 		{
 			return DependencyType;
 		}
