@@ -1,3 +1,6 @@
+**1.4.2**
+ - Support for changes of ARV version 1.4.2
+ 
 **1.4.1**
  - Made version compatible with the current AssetRelationsViewer version 1.4.0
  - Sizes of AssetBundles should be now calculated correctly

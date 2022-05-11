@@ -103,8 +103,6 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 	public class AddressableSerializedPropertyTraverserSubSystem : SerializedPropertyTraverserSubSystem
 	{
-		private Type AddressableType = typeof(AssetReference);
-
 		public override void TraversePrefab(string id, UnityEngine.Object obj, Stack<PathSegment> stack)
 		{
 			// No implementation
@@ -115,34 +113,15 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			// No implementation
 		}
 
-		public override Result GetDependency(object obj, string propertyPath, SerializedPropertyType type,
-			Stack<PathSegment> stack)
+		public override Result GetDependency(string sourceAssetId, object obj, string propertyPath, SerializedPropertyType type)
 		{
-			if (obj != null && obj is AssetReference assetReference && assetReference.editorAsset != null)
+			if (obj is AssetReference assetReference && assetReference.editorAsset != null)
 			{
 				string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(assetReference.editorAsset);
 					return new Result{Id = assetId, NodeType = AssetNodeType.Name, DependencyType = AssetToAssetAssetRefDependency.Name};
 			}
 			
 			return null;
-		}
-		
-		private bool IsType(Type type, Type requiredType)
-		{
-			string fullName = type.FullName;
-			string requeredTypeFullName = requiredType.FullName;
-
-			if (fullName == requeredTypeFullName)
-			{
-				return true;
-			}
-
-			if (type.BaseType != null)
-			{
-				return IsType(type.BaseType, requiredType);
-			}
-
-			return false;
 		}
 	}
 }
