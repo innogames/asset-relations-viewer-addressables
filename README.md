@@ -5,6 +5,8 @@ Addon for AssetRelationsViewer to support the unity addressable system.
 Tested with addressables version 1.2.2 and up.
 Not compatible with verified version 1.1.x!
 
+Needs at least v1.5.0 of AssetRelationsViewer!
+
 ## Package dependencies
 
 * com.innogames.asset-relations-viewer

@@ -41,9 +41,20 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		{
 			return !Application.isPlaying;
 		}
+		
+		private RelationLookup.RelationsLookup GetAssetToFileLookup()
+		{
+			NodeDependencyLookupContext context = new NodeDependencyLookupContext();
+			ResolverUsageDefinitionList resolverList = new ResolverUsageDefinitionList();
+			resolverList.Add<AssetToFileDependencyCache, AssetToFileDependencyResolver>(true, true, true);
+			NodeDependencyLookupUtility.LoadDependencyLookupForCaches(context, resolverList);
+
+			return context.RelationsLookup;
+		}
 
 		public void Update()
 		{
+			RelationLookup.RelationsLookup assetToFileLookup = GetAssetToFileLookup();
 			AddressableAssetSettings settings = UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings;
 
 			if (settings == null)
@@ -74,7 +85,8 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 					
 					foreach (AddressableAssetEntry assetEntry in entries)
 					{
-						string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(assetEntry.MainAsset);
+						Node fileNode = assetToFileLookup.GetNode(assetEntry.guid, FileNodeType.Name);
+						string assetId = fileNode.Referencers[0].Node.Id;
 						string componentName = "GroupUsage " + g++;
 						node.Dependencies.Add(new Dependency(assetId, AddressableGroupToAssetDependency.Name, AssetNodeType.Name, new []{new PathSegment(componentName, PathSegmentType.Property), }));
 					}
