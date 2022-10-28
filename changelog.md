@@ -1,3 +1,6 @@
+**1.5.0**
+ - AddressableAssetGroup resolvers now use the AssetToFile cache for faster asset id resolve
+
 **1.4.2**
  - Support for changes of ARV version 1.4.2
  
