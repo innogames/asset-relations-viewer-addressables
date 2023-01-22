@@ -1,3 +1,7 @@
+**2.0.0**
+ - API changes required by the AssetRelationsViewer version 2.0.0
+ - AssetGroup caches can now load without being updated by saving their dependencies in a file
+
 **1.5.0**
  - AddressableAssetGroup resolvers now use the AssetToFile cache for faster asset id resolve
 

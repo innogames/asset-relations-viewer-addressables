@@ -31,9 +31,9 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		private AddressableGroupNodeHandler _nodeHandler;
 
 		private int m_dropDownIndex = 0;
-		
+
 		private AssetRelationsViewerWindow _viewerWindow;
-		
+
 		public string GetHandledType()
 		{
 			return AddressableAssetGroupNodeType.Name;
@@ -41,10 +41,10 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 		public string GetSortingKey(string name)
 		{
-			return name;
+			return $"AddressableAssetGroup {name}";
 		}
 
-		public VisualizationNodeData CreateNodeCachedData(string id)
+		public VisualizationNodeData CreateNodeCachedData(Node node)
 		{
 			return new AddressableGroupVisualizationNodeData();
 		}
@@ -53,13 +53,12 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		{
 		}
 
-		public void InitContext(NodeDependencyLookupContext context, AssetRelationsViewerWindow viewerWindow, INodeHandler nodeHandler)
+		public void InitContext(NodeDependencyLookupContext context, AssetRelationsViewerWindow viewerWindow)
 		{
 			_viewerWindow = viewerWindow;
-			_nodeHandler = nodeHandler as AddressableGroupNodeHandler;
-		
+
 			HashSet<string> nodes = new HashSet<string>();
-			
+
 			foreach (KeyValuePair<string,CreatedDependencyCache> pair in context.CreatedCaches)
 			{
 				List<IDependencyMappingNode> resolvedNodes = new List<IDependencyMappingNode>();
@@ -89,11 +88,11 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 				EditorGUILayout.LabelField("or no addressable groups found");
 				return;
 			}
-			
+
 			EditorGUILayout.LabelField("Selected Group:");
 			EditorGUILayout.LabelField(m_selectedGroupId);
 			EditorGUILayout.Space();
-			
+
 			string newFilter = EditorGUILayout.TextField("Filter:", m_filter);
 
 			if (newFilter != m_filter)
@@ -106,7 +105,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 					if (node.Contains(m_filter))
 						filteredNodes.Add(node);
 				}
-				
+
 				m_filteredNodes = filteredNodes.ToArray();
 			}
 
@@ -127,38 +126,34 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 				m_selectedGroupId = String.Empty;
 		}
 	}
-	
+
 	public class AddressableGroupNodeHandler : INodeHandler
 	{
-		public string GetId()
-		{
-			return "AddressableGroupNodeHandler";
-		}
-
 		public string GetHandledNodeType()
 		{
 			return AddressableAssetGroupNodeType.Name;
 		}
-	
-		public int GetOwnFileSize(string type, string id, string key,
-			NodeDependencyLookupContext stateContext,
-			Dictionary<string, NodeDependencyLookupUtility.NodeSize> ownSizeCache)
+
+		public Node.NodeSize GetOwnFileSize(Node node, NodeDependencyLookupContext stateContext)
 		{
-			Node node = stateContext.RelationsLookup.GetNode(key);
 			HashSet<Node> addedNodes = new HashSet<Node>();
 			HashSet<Node> addedFiles = new HashSet<Node>();
-			
+
 			GetTreeNodes(node, stateContext, addedNodes, addedFiles, 0);
 
 			int size = 0;
-			
+
 			foreach (Node addedNode in addedFiles)
 			{
-				size += NodeDependencyLookupUtility.GetOwnNodeSize(addedNode.Id, addedNode.Type, addedNode.Key,
-						stateContext, ownSizeCache);
+				Node.NodeSize ownNodeSize = NodeDependencyLookupUtility.UpdateNodeSize(addedNode, stateContext, false);
+
+				if (ownNodeSize.ContributesToTreeSize && addedNode != node)
+				{
+					size += ownNodeSize.Size;
+				}
 			}
-			
-			return size;
+
+			return new Node.NodeSize{Size = size, ContributesToTreeSize = false};
 		}
 
 		private void GetTreeNodes(Node node, NodeDependencyLookupContext stateContext, HashSet<Node> addedNodes, HashSet<Node> addedFiles, int depth)
@@ -186,14 +181,14 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 				addedFiles.Add(node);
 				return;
 			}
-			
+
 			foreach (Connection dependency in node.Dependencies)
 			{
 				if (!stateContext.DependencyTypeLookup.GetDependencyType(dependency.DependencyType).IsHard)
 				{
-					return;
+					continue;
 				}
-				
+
 				string dependencyNodeType = dependency.Node.Type;
 
 				if (dependencyNodeType == AssetNodeType.Name || dependencyNodeType == FileNodeType.Name)
@@ -203,27 +198,12 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			}
 		}
 
-		public bool IsNodePackedToApp(string id, string type, bool alwaysExclude)
+		public bool IsNodePackedToApp(Node node, bool alwaysExclude)
 		{
 			return true;
 		}
 
-		public bool IsSceneAndPacked(string path)
-		{
-			return false;
-		}
-
-		public bool IsInResources(string path)
-		{
-			return false;
-		}
-
 		public bool IsNodeEditorOnly(string id, string type)
-		{
-			return false;
-		}
-
-		public bool ContributesToTreeSize()
 		{
 			return false;
 		}
@@ -237,6 +217,10 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		public long GetChangedTimeStamp(string id)
 		{
 			return -1;
+		}
+
+		public void SaveCaches()
+		{
 		}
 
 		public void InitContext(NodeDependencyLookupContext nodeDependencyLookupContext)
