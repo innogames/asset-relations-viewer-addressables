@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -11,7 +12,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 	{
 		public const string Name = "ATOA_AssetRef";
 	}
-	
+
 	/// <summary>
 	/// Resolver to find dependencies to assets which are connected via the AddressableAssets system
 	/// </summary>
@@ -22,26 +23,12 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 		private readonly HashSet<string> validGuids = new HashSet<string>();
 		private const string Id = "AddressableReferenceResolver";
-		
-		private AddressableSerializedPropertyTraverserSubSystem SubSystem = new AddressableSerializedPropertyTraverserSubSystem();
-		
-		public void GetDependenciesForId(string guid, List<Dependency> dependencies)
+
+		private AddressableSerializedPropertyTraverserSubSystem TraverserSubSystem = new AddressableSerializedPropertyTraverserSubSystem();
+
+		public void GetDependenciesForId(string assetId, List<Dependency> dependencies)
 		{
-			HashSet<string> foundDependenciesHashSet = new HashSet<string>();
-
-			if (SubSystem.Dependencies.ContainsKey(guid))
-			{
-				foreach (Dependency dependency in SubSystem.Dependencies[guid])
-				{
-					string dependencyGuid = dependency.Id;
-
-					if (dependencyGuid != guid)
-					{
-						dependencies.Add(dependency);
-						foundDependenciesHashSet.Add(dependencyGuid);
-					}
-				}
-			}
+			TraverserSubSystem.GetDependenciesForId(assetId, dependencies);
 		}
 
 		public bool IsGuidValid(string guid)
@@ -67,7 +54,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		public void SetValidGUIDs()
 		{
 			validGuids.Clear();
-			
+
 			foreach (string guid in AssetDatabase.FindAssets("t:GameObject"))
 			{
 				validGuids.Add(guid);
@@ -88,14 +75,14 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 		public void Initialize(AssetDependencyCache cache, HashSet<string> changedAssets)
 		{
-			SubSystem.Clear();
+			TraverserSubSystem.Clear();
 
 			foreach (string assetId in changedAssets)
 			{
 				string guid = NodeDependencyLookupUtility.GetGuidFromAssetId(assetId);
 				if (validGuids.Contains(guid))
 				{
-					cache._hierarchyTraverser.AddAssetId(assetId, SubSystem);
+					cache._hierarchyTraverser.AddAssetId(assetId, TraverserSubSystem);
 				}
 			}
 		}
@@ -103,6 +90,20 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 	public class AddressableSerializedPropertyTraverserSubSystem : SerializedPropertyTraverserSubSystem
 	{
+		private MethodInfo subObjectMethodInfo;
+
+		public AddressableSerializedPropertyTraverserSubSystem()
+		{
+			Type assetReferenceType = typeof(AssetReference);
+			subObjectMethodInfo = assetReferenceType.GetMethod("get_SubOjbectType", BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic);
+
+			if (subObjectMethodInfo == null)
+			{
+				// Try version without typo
+				subObjectMethodInfo = assetReferenceType.GetMethod("get_SubObjectType", BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic);
+			}
+		}
+
 		public override void TraversePrefab(string id, UnityEngine.Object obj, Stack<PathSegment> stack)
 		{
 			// No implementation
@@ -117,10 +118,27 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		{
 			if (obj is AssetReference assetReference && assetReference.editorAsset != null)
 			{
-				string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(assetReference.editorAsset);
+				Object asset = assetReference.editorAsset;
+
+				if (assetReference.SubObjectName != null && subObjectMethodInfo != null)
+				{
+					Type subObjectType = subObjectMethodInfo.Invoke(assetReference, new object[] {}) as Type;
+					Object[] allAssets = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GUIDToAssetPath(assetReference.AssetGUID));
+
+					foreach (Object allAsset in allAssets)
+					{
+						if (allAsset.name == assetReference.SubObjectName && allAsset.GetType() == subObjectType)
+						{
+							asset = allAsset;
+							break;
+						}
+					}
+				}
+
+				string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(asset);
 					return new Result{Id = assetId, NodeType = AssetNodeType.Name, DependencyType = AssetToAssetAssetRefDependency.Name};
 			}
-			
+
 			return null;
 		}
 	}

@@ -49,6 +49,11 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return new AddressableGroupVisualizationNodeData();
 		}
 
+		public string GetNodeDisplayName(Node node)
+		{
+			return node.Name;
+		}
+
 		public void SelectInEditor(string id)
 		{
 		}
@@ -217,6 +222,10 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		public long GetChangedTimeStamp(string id)
 		{
 			return -1;
+		}
+
+		public void InitNameAndTypeInformation()
+		{
 		}
 
 		public void SaveCaches()
