@@ -26,24 +26,6 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 		private MethodInfo subObjectMethodInfo;
 
-		public readonly Dictionary<string, List<Dependency>> Dependencies = new Dictionary<string, List<Dependency>>();
-
-		public void GetDependenciesForId(string assetId, List<Dependency> dependencies)
-		{
-			if (Dependencies.ContainsKey(assetId))
-			{
-				foreach (Dependency dependency in Dependencies[assetId])
-				{
-					string dependencyGuid = dependency.Id;
-
-					if (dependencyGuid != assetId)
-					{
-						dependencies.Add(dependency);
-					}
-				}
-			}
-		}
-
 		public bool IsGuidValid(string guid)
 		{
 			return validGuids.Contains(guid);
@@ -88,8 +70,6 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 		public void Initialize(AssetDependencyCache cache)
 		{
-			Dependencies.Clear();
-
 			Type assetReferenceType = typeof(AssetReference);
 			subObjectMethodInfo = assetReferenceType.GetMethod("get_SubOjbectType", BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -100,24 +80,14 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			}
 		}
 
-		public void TraversePrefab(string id, UnityEngine.Object obj, Stack<PathSegment> stack)
+		public void TraversePrefab(ResolverDependencySearchContext searchContext, Object obj, Stack<PathSegment> stack)
 		{
 			// No implementation
 		}
 
-		public void TraversePrefabVariant(string id, Object obj, Stack<PathSegment> stack)
+		public void TraversePrefabVariant(ResolverDependencySearchContext searchContext, Object obj, Stack<PathSegment> stack)
 		{
 			// No implementation
-		}
-
-		public void AddDependency(string id, Dependency dependency)
-		{
-			if (!Dependencies.ContainsKey(id))
-			{
-				Dependencies.Add(id, new List<Dependency>());
-			}
-
-			Dependencies[id].Add(dependency);
 		}
 
 		public AssetDependencyResolverResult GetDependency(string sourceAssetId, object obj, string propertyPath, SerializedPropertyType type)
