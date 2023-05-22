@@ -24,16 +24,29 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		private readonly HashSet<string> validGuids = new HashSet<string>();
 		private const string Id = "AddressableReferenceResolver";
 
-		private AddressableSerializedPropertyTraverserSubSystem TraverserSubSystem = new AddressableSerializedPropertyTraverserSubSystem();
+		private MethodInfo subObjectMethodInfo;
+
+		public readonly Dictionary<string, List<Dependency>> Dependencies = new Dictionary<string, List<Dependency>>();
 
 		public void GetDependenciesForId(string assetId, List<Dependency> dependencies)
 		{
-			TraverserSubSystem.GetDependenciesForId(assetId, dependencies);
+			if (Dependencies.ContainsKey(assetId))
+			{
+				foreach (Dependency dependency in Dependencies[assetId])
+				{
+					string dependencyGuid = dependency.Id;
+
+					if (dependencyGuid != assetId)
+					{
+						dependencies.Add(dependency);
+					}
+				}
+			}
 		}
 
 		public bool IsGuidValid(string guid)
 		{
-			return true;
+			return validGuids.Contains(guid);
 		}
 
 		public string GetId()
@@ -73,27 +86,10 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			}
 		}
 
-		public void Initialize(AssetDependencyCache cache, HashSet<string> changedAssets)
+		public void Initialize(AssetDependencyCache cache)
 		{
-			TraverserSubSystem.Clear();
+			Dependencies.Clear();
 
-			foreach (string assetId in changedAssets)
-			{
-				string guid = NodeDependencyLookupUtility.GetGuidFromAssetId(assetId);
-				if (validGuids.Contains(guid))
-				{
-					cache._hierarchyTraverser.AddAssetId(assetId, TraverserSubSystem);
-				}
-			}
-		}
-	}
-
-	public class AddressableSerializedPropertyTraverserSubSystem : SerializedPropertyTraverserSubSystem
-	{
-		private MethodInfo subObjectMethodInfo;
-
-		public AddressableSerializedPropertyTraverserSubSystem()
-		{
 			Type assetReferenceType = typeof(AssetReference);
 			subObjectMethodInfo = assetReferenceType.GetMethod("get_SubOjbectType", BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -104,17 +100,27 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			}
 		}
 
-		public override void TraversePrefab(string id, UnityEngine.Object obj, Stack<PathSegment> stack)
+		public void TraversePrefab(string id, UnityEngine.Object obj, Stack<PathSegment> stack)
 		{
 			// No implementation
 		}
 
-		public override void TraversePrefabVariant(string id, Object obj, Stack<PathSegment> stack)
+		public void TraversePrefabVariant(string id, Object obj, Stack<PathSegment> stack)
 		{
 			// No implementation
 		}
 
-		public override Result GetDependency(string sourceAssetId, object obj, string propertyPath, SerializedPropertyType type)
+		public void AddDependency(string id, Dependency dependency)
+		{
+			if (!Dependencies.ContainsKey(id))
+			{
+				Dependencies.Add(id, new List<Dependency>());
+			}
+
+			Dependencies[id].Add(dependency);
+		}
+
+		public AssetDependencyResolverResult GetDependency(string sourceAssetId, object obj, string propertyPath, SerializedPropertyType type)
 		{
 			if (obj is AssetReference assetReference && assetReference.editorAsset != null)
 			{
@@ -123,7 +129,17 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 				if (assetReference.SubObjectName != null && subObjectMethodInfo != null)
 				{
 					Type subObjectType = subObjectMethodInfo.Invoke(assetReference, new object[] {}) as Type;
-					Object[] allAssets = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GUIDToAssetPath(assetReference.AssetGUID));
+
+					Object[] allAssets = null;
+
+					if (asset is SceneAsset)
+					{
+						allAssets = new Object[] {asset};
+					}
+					else
+					{
+						allAssets = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GUIDToAssetPath(assetReference.AssetGUID));
+					}
 
 					foreach (Object allAsset in allAssets)
 					{
@@ -136,7 +152,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 				}
 
 				string assetId = NodeDependencyLookupUtility.GetAssetIdForAsset(asset);
-					return new Result{Id = assetId, NodeType = AssetNodeType.Name, DependencyType = AssetToAssetAssetRefDependency.Name};
+				return new AssetDependencyResolverResult{Id = assetId, NodeType = AssetNodeType.Name, DependencyType = AssetToAssetAssetRefDependency.Name};
 			}
 
 			return null;
