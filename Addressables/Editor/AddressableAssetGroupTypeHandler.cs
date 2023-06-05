@@ -150,7 +150,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 			foreach (Node addedNode in addedFiles)
 			{
-				Node.NodeSize ownNodeSize = NodeDependencyLookupUtility.UpdateNodeSize(addedNode, stateContext, false);
+				Node.NodeSize ownNodeSize = NodeDependencyLookupUtility.GetNodeSize(addedNode, stateContext, false);
 
 				if (ownNodeSize.ContributesToTreeSize && addedNode != node)
 				{
@@ -213,10 +213,12 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return false;
 		}
 
-		public void GetNameAndType(string id, out string name, out string type)
+		public Node CreateNode(string id, string type, bool update)
 		{
-			name = id;
-			type = "AddressableAssetGroupBundle";
+			string name = id;
+			string concreteType = "AddressableAssetGroupBundle";
+
+			return new Node(id, type, name, concreteType, 0);
 		}
 
 		public long GetChangedTimeStamp(string id)
@@ -224,7 +226,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			return -1;
 		}
 
-		public void InitNameAndTypeInformation()
+		public void InitNodeDataInformation()
 		{
 		}
 
