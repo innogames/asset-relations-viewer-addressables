@@ -50,21 +50,20 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 		{
 			validGuids.Clear();
 
-			foreach (string guid in AssetDatabase.FindAssets("t:GameObject"))
+			string[] filters =
 			{
-				validGuids.Add(guid);
-			}
-			foreach (string guid in AssetDatabase.FindAssets("t:Scene"))
+				"t:GameObject",
+				"t:Scene",
+				"t:ScriptableObject",
+				"t:TimelineAsset",
+			};
+
+			foreach (string filter in filters)
 			{
-				validGuids.Add(guid);
-			}
-			foreach (string guid in AssetDatabase.FindAssets("t:Material"))
-			{
-				validGuids.Add(guid);
-			}
-			foreach (string guid in AssetDatabase.FindAssets("t:ScriptableObject"))
-			{
-				validGuids.Add(guid);
+				foreach (string guid in AssetDatabase.FindAssets(filter))
+				{
+					validGuids.Add(guid);
+				}
 			}
 		}
 
@@ -96,7 +95,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 			{
 				Object asset = assetReference.editorAsset;
 
-				if (assetReference.SubObjectName != null && subObjectMethodInfo != null)
+				if (!string.IsNullOrEmpty(assetReference.SubObjectName) && subObjectMethodInfo != null)
 				{
 					Type subObjectType = subObjectMethodInfo.Invoke(assetReference, new object[] {}) as Type;
 
@@ -113,7 +112,7 @@ namespace Com.Innogames.Core.Frontend.NodeDependencyLookup.Addressables
 
 					foreach (Object allAsset in allAssets)
 					{
-						if (allAsset.name == assetReference.SubObjectName && allAsset.GetType() == subObjectType)
+						if (allAsset != null && allAsset.name == assetReference.SubObjectName && (subObjectType == null || allAsset.GetType() == subObjectType))
 						{
 							asset = allAsset;
 							break;
